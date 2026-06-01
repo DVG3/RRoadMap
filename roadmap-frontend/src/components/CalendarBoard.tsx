@@ -7,12 +7,11 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import { useRoadmapStore } from '../core/store';
 
-// Cấu hình ngôn ngữ Tiếng Việt cho Lịch
 const locales = { 'vi': vi };
 const localizer = dateFnsLocalizer({
   format,
   parse,
-  startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }), // Tuần bắt đầu vào Thứ 2
+  startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }),
   getDay,
   locales,
 });
@@ -21,49 +20,52 @@ const DnDCalendar = withDragAndDrop(Calendar);
 
 export default function CalendarBoard() {
   const { nodes, updateNodeData, updateNodeConfig } = useRoadmapStore();
+  const [date, setDate] = useState(new Date());
   const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null);
 
-  // Lọc lấy các Task Node
   const tasks = nodes.filter(n => n.type === 'task');
-  
-  // Phân loại: Có ngày tháng vs Chưa có ngày tháng
   const scheduledTasks = tasks.filter(t => t.data?.startDate && t.data?.endDate);
   const unscheduledTasks = tasks.filter(t => !t.data?.startDate || !t.data?.endDate);
 
-  // Chuyển đổi định dạng Task thành Event của Calendar
   const events = scheduledTasks.map(t => ({
     id: t.id,
     title: t.data.title || 'Untitled Task',
     start: new Date(t.data.startDate),
     end: new Date(t.data.endDate),
-    allDay: true, // App Roadmap thường xài All-day cho dễ nhìn
-    node: t // Lưu trữ ref của Node gốc để lấy màu/tags
+    allDay: true,
+    node: t,
   }));
 
-  // Xử lý khi kéo giãn Event trên Lịch (Đổi Start/End date)
   const resizeEvent = ({ event, start, end }: any) => {
     updateNodeData(event.id, { startDate: start.toISOString(), endDate: end.toISOString() });
   };
 
-  // Xử lý khi dời Event sang ngày khác
   const moveEvent = ({ event, start, end }: any) => {
     updateNodeData(event.id, { startDate: start.toISOString(), endDate: end.toISOString() });
   };
 
-  // Xử lý khi Click vào Event -> Hiển thị Properties ở Sidebar phải
   const handleSelectEvent = (event: any) => {
-    nodes.forEach(n => updateNodeConfig(n.id, { selected: n.id === event.id }));
+    nodes.forEach(n => {
+      if (n.selected !== (n.id === event.id)) {
+        updateNodeConfig(n.id, { selected: n.id === event.id });
+      }
+    });
   };
 
-  // Xử lý khi thả Task từ Cột Backlog vào trong Lịch
+  const handleSelectUnscheduled = (nodeId: string) => {
+    nodes.forEach(n => {
+      if (n.selected !== (n.id === nodeId)) {
+        updateNodeConfig(n.id, { selected: n.id === nodeId });
+      }
+    });
+  };
+
   const onDropFromOutside = useCallback(
     ({ start, end }: any) => {
       if (draggedNodeId) {
         updateNodeData(draggedNodeId, {
           startDate: start.toISOString(),
-          // Mặc định thả vào 1 ngày thì start và end giống nhau
-          endDate: end.toISOString()
-
+          endDate: end.toISOString(),
         });
         setDraggedNodeId(null);
       }
@@ -71,11 +73,14 @@ export default function CalendarBoard() {
     [draggedNodeId, updateNodeData]
   );
 
+  const handleNavigate = useCallback((newDate: Date) => {
+    setDate(newDate);
+  }, []);
+
   return (
-    <div className="flex h-full w-full bg-white">
-      {/* CỘT TRÁI: UNSCHEDULED TASKS (BACKLOG) */}
-      <div className="w-64 border-r bg-gray-50 flex flex-col shrink-0 shadow-inner">
-        <div className="p-3 bg-gray-200 font-bold text-sm text-gray-700 uppercase tracking-wide border-b border-gray-300">
+    <div className="flex h-full w-full bg-white dark:bg-gray-900">
+      <div className="w-64 border-r bg-gray-50 flex flex-col shrink-0 shadow-inner dark:bg-gray-800 dark:border-gray-700">
+        <div className="p-3 bg-gray-200 font-bold text-sm text-gray-700 uppercase tracking-wide border-b border-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
           Chưa xếp lịch
         </div>
         <div className="flex-1 overflow-y-auto p-3 space-y-2">
@@ -84,23 +89,25 @@ export default function CalendarBoard() {
               key={t.id}
               draggable
               onDragStart={() => setDraggedNodeId(t.id)}
-              className="p-2 bg-white border-2 border-gray-200 rounded shadow-sm cursor-grab active:cursor-grabbing text-sm font-semibold hover:border-blue-400 transition-colors"
+              onClick={() => handleSelectUnscheduled(t.id)}
+              className="p-2 bg-white border-2 border-gray-200 rounded shadow-sm cursor-grab active:cursor-grabbing text-sm font-semibold hover:border-blue-400 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
               style={{ borderLeftColor: t.data.color || '#3b82f6', borderLeftWidth: '4px' }}
             >
               {t.data.title || 'Untitled Task'}
             </div>
           ))}
           {unscheduledTasks.length === 0 && (
-             <div className="text-xs text-gray-400 text-center mt-4">Không còn task nào trống.</div>
+             <div className="text-xs text-gray-400 text-center mt-4 dark:text-gray-500">Không còn task nào trống.</div>
           )}
         </div>
       </div>
 
-      {/* CỘT PHẢI: BẢN ĐỒ LỊCH */}
       <div className="flex-1 p-4 overflow-hidden h-full">
         <DnDCalendar
           localizer={localizer}
           events={events}
+          date={date}
+          onNavigate={handleNavigate}
           onEventDrop={moveEvent}
           onEventResize={resizeEvent}
           onSelectEvent={handleSelectEvent}
@@ -114,15 +121,38 @@ export default function CalendarBoard() {
           messages={{
              next: "Tiếp", previous: "Trước", today: "Hôm nay", month: "Tháng", week: "Tuần", day: "Ngày", showMore: (total) => `+ Xem thêm (${total})`
           }}
-          // Đổi màu nền event dựa vào màu gốc của Node Task
+          components={{
+            event: ({ event }: any) => (
+              <div className="rbc-event-content flex items-center gap-1">
+                <span className="truncate flex-1">{event.title}</span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateNodeData(event.id, { startDate: null, endDate: null });
+                  }}
+                  className="unschedule-btn"
+                  title="Bỏ xếp lịch"
+                >✕</button>
+              </div>
+            ),
+          }}
           eventPropGetter={(event: any) => ({
             style: { 
               backgroundColor: event.node.data.color || '#3b82f6', 
-              color: '#1f2937', // Text tối màu để dễ đọc
+              color: '#1f2937',
               fontWeight: 'bold',
-              border: '1px solid rgba(0,0,0,0.1)'
+              border: '1px solid rgba(0,0,0,0.1)',
+              fontSize: '12px',
+              padding: '2px 4px',
             }
           })}
+          dayPropGetter={(date: Date) => {
+            const today = new Date();
+            if (date.toDateString() === today.toDateString()) {
+              return { className: 'rbc-today-custom' };
+            }
+            return {};
+          }}
         />
       </div>
     </div>

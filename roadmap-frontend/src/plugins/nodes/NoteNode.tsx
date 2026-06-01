@@ -30,7 +30,7 @@ export default function NoteNode({ id, data, selected }: { id: string, data: any
 
   return (
     <>
-      <NodeResizer color="#eab308" isVisible={selected} minWidth={150} minHeight={100} />
+      <NodeResizer color="#eab308" isVisible={selected} minWidth={150} minHeight={100} handleStyle={{ width: 12, height: 12, borderRadius: 4 }} />
       <div 
         className={`w-full h-full p-2 rounded shadow-md border-2 transition-shadow flex flex-col ${selected ? 'border-yellow-500 shadow-lg' : 'border-transparent'}`}
         style={{ backgroundColor: bgColor }}

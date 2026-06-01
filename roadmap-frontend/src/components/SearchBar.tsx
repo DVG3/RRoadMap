@@ -25,7 +25,7 @@ export default function SearchBar() {
 
   // Thuật toán lọc kết quả (Lọc theo Tên Task hoặc Tên Tag)
   const searchResults = nodes.filter(node => {
-    if (node.type !== 'task' && node.type !== 'task-holder') return false;
+    if (node.type !== 'task' && node.type !== 'task-holder' && node.type !== 'note') return false;
     if (!query) return false;
     
     const lowerQuery = query.toLowerCase();

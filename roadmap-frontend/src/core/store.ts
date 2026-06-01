@@ -27,10 +27,11 @@ interface RoadmapState {
   addTag: (tag: Tag) => void;
   updateTag: (id: string, name: string, color: string) => void;
   deleteTag: (id: string) => void;
+  theme: 'light' | 'dark';
+  setTheme: (theme: 'light' | 'dark') => void;
   viewMode: 'board' | 'calendar';
   setViewMode: (mode: 'board' | 'calendar') => void;
   loadRoadmap: (data: { nodes: Node[], edges: Edge[], tags: Tag[] }) => void;
-// Thêm vào interface RoadmapState
   detachChildren: (parentId: string) => void;
   currentFile: string;
   roadmapFiles: string[];
@@ -51,6 +52,11 @@ interface RoadmapState {
 export const useRoadmapStore = create<RoadmapState>((set, get) => ({
   nodes: [],
   edges: [],
+  theme: (localStorage.getItem('roadmap_theme') as 'light' | 'dark') || 'light',
+  setTheme: (theme) => {
+    localStorage.setItem('roadmap_theme', theme);
+    set({ theme });
+  },
   tags: [
     { id: 'tag-1', name: 'Frontend', color: '#3b82f6' },
     { id: 'tag-2', name: 'Backend', color: '#10b981' }

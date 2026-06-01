@@ -12,11 +12,16 @@ import { useRoadmapStore } from './core/store';
 import { syncToDropbox, loadFromDropbox, listFilesFromDropbox } from './core/dropboxSync';
 
 function App() {
-  const { addNode, viewMode, setViewMode, nodes, edges, tags, loadRoadmap, currentFile, setCurrentFile, setRoadmapFiles, isSyncing, setIsSyncing, undo, redo } = useRoadmapStore(); // Lấy thêm undo, redo
+  const { viewMode, setViewMode, nodes, edges, tags, loadRoadmap, currentFile, setCurrentFile, setRoadmapFiles, isSyncing, setIsSyncing, undo, redo, theme, setTheme } = useRoadmapStore();
   
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [lastSync, setLastSync] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isDropboxConnected = !!localStorage.getItem('dropbox_client_id') && !!localStorage.getItem('dropbox_client_secret') && !!localStorage.getItem('dropbox_refresh_token');
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+  }, [theme]);
 const handleExportLocal = () => {
     const dataToSave = { nodes, edges, tags };
     const blob = new Blob([JSON.stringify(dataToSave, null, 2)], { type: 'application/json' });
@@ -48,7 +53,7 @@ const handleExportLocal = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
   const fetchCloudData = async () => {
-    if (!localStorage.getItem('dropbox_token')) {
+    if (!localStorage.getItem('dropbox_refresh_token')) {
       setShowTokenModal(true); return;
     }
     
@@ -69,23 +74,24 @@ const handleExportLocal = () => {
     }
     
     // BƯỚC 2: Tải dữ liệu của File hiện tại
-    const data = await loadFromDropbox(activeFile);
-    if (data) {
-      loadRoadmap(data);
-      setLastSync(new Date().toLocaleTimeString());
+    try {
+      const data = await loadFromDropbox(activeFile);
+      if (data) {
+        loadRoadmap(data);
+        setLastSync(new Date().toLocaleTimeString());
+      }
+    } catch {
+      // im lặng, có thể file chưa tồn tại trên Dropbox
     }
     setIsSyncing(false);
   };
 
   useEffect(() => { fetchCloudData(); }, []);
 
-  const handleSync = async () => {
-    if (!localStorage.getItem('dropbox_token')) { setShowTokenModal(true); return; }
+  const handlePush = async () => {
+    if (!localStorage.getItem('dropbox_refresh_token')) { setShowTokenModal(true); return; }
     setIsSyncing(true);
-    
-    // Cập nhật hàm gọi sync để truyền tên file hiện hành
     const success = await syncToDropbox(currentFile, { nodes, edges, tags });
-    
     if (success) {
       setLastSync(new Date().toLocaleTimeString());
     } else {
@@ -95,12 +101,27 @@ const handleExportLocal = () => {
     setIsSyncing(false);
   };
 
+  const handlePull = async () => {
+    if (!localStorage.getItem('dropbox_refresh_token')) { setShowTokenModal(true); return; }
+    setIsSyncing(true);
+    try {
+      const data = await loadFromDropbox(currentFile);
+      if (data) {
+        loadRoadmap(data);
+        setLastSync(new Date().toLocaleTimeString());
+      }
+    } catch {
+      alert("Tải dữ liệu thất bại! Kiểm tra console (F12) để xem chi tiết lỗi.");
+    }
+    setIsSyncing(false);
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Bắt Ctrl + S
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
-        handleSync();
+        handlePush();
       }
       // Bắt Ctrl + Z (Undo)
       if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
@@ -116,8 +137,7 @@ const handleExportLocal = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [nodes, edges, tags, currentFile]);
-  // ... (Phần render UI ở dưới của App.tsx giữ nguyên y như cũ)
- 
+
   return (
     <ReactFlowProvider>
       <DropboxModal 
@@ -126,7 +146,7 @@ const handleExportLocal = () => {
         onSave={() => fetchCloudData()} // <--- Bỏ chữ token đi, chỉ gọi fetchCloudData()
       />
 
-      <div className="w-screen h-screen flex flex-col bg-gray-100 overflow-hidden">
+      <div className="w-screen h-screen flex flex-col bg-gray-100 overflow-hidden dark:bg-gray-900">
         
         {/* Topbar */}
         <div className="h-14 shrink-0 bg-gray-900 text-white flex items-center px-4 justify-between z-10 shadow-md">
@@ -153,34 +173,41 @@ const handleExportLocal = () => {
                  📤 Export
                </button>
              </div>
-             <div className="flex items-center gap-3 border-r border-gray-600 pr-3 mr-1">
-               {isSyncing ? (
-                 <span className="text-xs text-yellow-400 animate-pulse font-semibold">🔄 Đang đồng bộ...</span>
-               ) : (
-                 <span className="text-[10px] text-gray-400">Lưu lần cuối: {lastSync || 'Chưa lưu'}</span>
-               )}
-               
-               <button onClick={handleSync} className="text-xs bg-emerald-600 px-3 py-1.5 rounded font-bold hover:bg-emerald-500 shadow transition-colors" title="Hoặc nhấn Ctrl+S">
-                 ☁️ Sync (Ctrl+S)
-               </button>
-               
-               {/* Nút cài đặt Token */}
-               <button onClick={() => setShowTokenModal(true)} className="text-lg opacity-60 hover:opacity-100" title="Cài đặt Dropbox Token">
-                 ⚙️
-               </button>
-             </div>
+              <div className="flex items-center gap-3 border-r border-gray-600 pr-3 mr-1">
+                {isSyncing ? (
+                  <span className="text-xs text-yellow-400 animate-pulse font-semibold">🔄 Đang đồng bộ...</span>
+                ) : (
+                  <span className="text-[10px] text-gray-400">Lưu lần cuối: {lastSync || 'Chưa lưu'}</span>
+                )}
+                
+                 <button onClick={handlePull} className="text-xs bg-amber-600 px-3 py-1.5 rounded font-bold hover:bg-amber-500 shadow transition-colors" title="Tải dữ liệu từ Dropbox">
+                   ⬇️ Pull
+                 </button>
+                 <button onClick={handlePush} className="text-xs bg-emerald-600 px-3 py-1.5 rounded font-bold hover:bg-emerald-500 shadow transition-colors" title="Hoặc nhấn Ctrl+S">
+                   ☁️ Push (Ctrl+S)
+                 </button>
+                 
+                 <button onClick={() => setShowTokenModal(true)} className="text-xs bg-gray-700 px-2 py-1.5 rounded font-semibold hover:bg-gray-600 shadow transition-colors" title="Cài đặt Dropbox Token">
+                   ⚙️ Cài đặt
+                 </button>
+                 
+                 <span className={`flex items-center gap-1 text-[10px] font-semibold ${isDropboxConnected ? 'text-green-400' : 'text-red-400'}`}>
+                   <span className={`w-1.5 h-1.5 rounded-full ${isDropboxConnected ? 'bg-green-400' : 'bg-red-400'}`} />
+                   {isDropboxConnected ? 'Đã kết nối' : 'Chưa cấu hình'}
+                 </span>
+              </div>
 
-            <button onClick={() => addNode({ id: `note-${Date.now()}`, type: 'note', position: { x: 100, y: 100 }, data: { color: '#fef08a' } })} className="bg-yellow-600 px-3 py-1.5 rounded font-semibold text-xs hover:bg-yellow-500 shadow">📝 Note</button>
-            <button onClick={() => addNode({ id: `reroute-${Date.now()}`, type: 'reroute', position: { x: 150, y: 150 }, data: {} })} className="bg-gray-600 px-3 py-1.5 rounded font-semibold text-xs hover:bg-gray-500 shadow">⏺ Chốt</button>
-            {/* Nếu nút Task và Group của bạn vẫn còn ở hàm cũ thì chèn vào đây */}
+              <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="text-sm px-2 py-1.5 rounded hover:bg-gray-700 transition-colors" title="Chuyển giao diện">
+                {theme === 'dark' ? '☀️' : '🌙'}
+              </button>
           </div>
-        </div>
-// ...
+          </div>
+
         {/* Main Layout */}
         <div className="flex-1 h-full">
           <Group orientation="horizontal">
             <Panel defaultSize={18} minSize={12}><LeftSidebar /></Panel>
-            <Separator className="w-1.5 bg-gray-200 hover:bg-blue-400 cursor-col-resize transition-colors" />
+            <Separator className="w-1.5 bg-gray-200 hover:bg-blue-400 cursor-col-resize transition-colors dark:bg-gray-700 dark:hover:bg-blue-500" />
             
             {/* RENDER DỰA TRÊN VIEW MODE */}
             <Panel defaultSize={62} minSize={30}>
@@ -191,7 +218,7 @@ const handleExportLocal = () => {
               )}
             </Panel>
             
-            <Separator className="w-1.5 bg-gray-200 hover:bg-blue-400 cursor-col-resize transition-colors" />
+            <Separator className="w-1.5 bg-gray-200 hover:bg-blue-400 cursor-col-resize transition-colors dark:bg-gray-700 dark:hover:bg-blue-500" />
             <Panel defaultSize={20} minSize={15}><RightSidebar /></Panel>
           </Group>
         </div>

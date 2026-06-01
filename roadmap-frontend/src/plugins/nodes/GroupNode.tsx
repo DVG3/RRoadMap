@@ -12,6 +12,7 @@ export default function GroupNode({ id, data, selected }: { id: string, data: an
         isVisible={selected} 
         minWidth={400} 
         minHeight={300} 
+        handleStyle={{ width: 12, height: 12, borderRadius: 4 }}
       />
       <div 
         className={`w-full h-full rounded-xl border-[3px] transition-all ${selected ? 'border-indigo-500 shadow-xl' : 'border-dashed border-gray-400'}`}

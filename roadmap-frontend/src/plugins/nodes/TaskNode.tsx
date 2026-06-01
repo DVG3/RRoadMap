@@ -28,7 +28,7 @@ export default function TaskNode({ data, selected }: { data: any, selected: bool
 
   return (
     <>
-      <NodeResizer color="#3b82f6" isVisible={selected} minWidth={150} minHeight={60} handleStyle={{ width: 6, height: 6, borderRadius: 3 }} />
+      <NodeResizer color="#3b82f6" isVisible={selected} minWidth={150} minHeight={60} handleStyle={{ width: 12, height: 12, borderRadius: 4 }} />
       <div className={`w-full h-full p-3 rounded-md border-2 ${borderClass} transition-shadow flex flex-col`} style={{ backgroundColor: bgColor }}>
         <Handle type="target" position={Position.Left} className="w-3 h-3 bg-blue-500" />
         

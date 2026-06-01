@@ -1,23 +1,162 @@
-/* Khai báo của Tailwind v4 */
 @import "tailwindcss";
 
-/* Ép thẻ gốc của React (#root) phải tràn viền 100% màn hình, 
-nếu không các thành phần bên trong sẽ bị bóp dẹt */
+@custom-variant dark (&:where(.dark, .dark *));
+
 html, body, #root {
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
   overflow: hidden;
-  background-color: #f3f4f6; /* Màu xám nhạt (bg-gray-100) */
+  background-color: #f3f4f6;
+}
+
+.dark html, .dark body, .dark #root {
+  background-color: #111827;
 }
 
 .react-flow__node-custom-group {
   pointer-events: none !important;
 }
 
-/* Khôi phục lại khả năng click cho Header, Resizer và các nút bên trong Group */
 .react-flow__node-custom-group .pointer-events-auto,
 .react-flow__node-custom-group .react-flow__resize-control {
   pointer-events: auto !important;
+}
+
+.react-flow__background {
+  background-color: var(--bg-flow, #f9fafb) !important;
+}
+.dark .react-flow__background {
+  --bg-flow: #1f2937;
+}
+
+.react-flow__controls-button {
+  background-color: var(--ctrl-bg, #ffffff) !important;
+  border-color: var(--ctrl-border, #e5e7eb) !important;
+  color: var(--ctrl-color, #374151) !important;
+}
+.dark .react-flow__controls-button {
+  --ctrl-bg: #374151;
+  --ctrl-border: #4b5563;
+  --ctrl-color: #e5e7eb;
+}
+
+.react-flow__minimap {
+  border-color: var(--minimap-border, #e5e7eb) !important;
+}
+.dark .react-flow__minimap {
+  --minimap-border: #4b5563;
+}
+
+.rbc-calendar {
+  background-color: var(--rbc-bg, #ffffff);
+}
+.dark .rbc-calendar {
+  --rbc-bg: #1f2937;
+}
+.rbc-toolbar button {
+  color: #373a3c;
+  background: none;
+  border: 1px solid #ccc;
+}
+.rbc-toolbar button.rbc-active,
+.rbc-toolbar button:active {
+  background-color: #e6e6e6;
+  border-color: #adadad;
+  color: #373a3c;
+}
+.rbc-toolbar button:hover {
+  background-color: #e6e6e6;
+}
+.dark .rbc-toolbar button {
+  color: #e5e7eb;
+  border-color: #4b5563;
+}
+.dark .rbc-toolbar button.rbc-active,
+.dark .rbc-toolbar button:active {
+  background-color: #4b5563;
+  border-color: #6b7280;
+  color: #f9fafb;
+}
+.dark .rbc-toolbar button:hover {
+  background-color: #4b5563;
+}
+.dark .rbc-header,
+.dark .rbc-today,
+.dark .rbc-off-range-bg {
+  background-color: #374151;
+}
+.dark .rbc-date-cell {
+  color: #e5e7eb;
+}
+.rbc-month-row,
+.rbc-week-row {
+  min-height: 80px;
+}
+.rbc-row-segment .rbc-event {
+  padding: 1px 4px;
+  font-size: 12px;
+}
+.rbc-event {
+  border-radius: 3px;
+}
+.rbc-event-content {
+  overflow: visible !important;
+}
+.rbc-event:hover .unschedule-btn {
+  opacity: 1;
+}
+.unschedule-btn {
+  opacity: 0;
+  transition: opacity 0.15s;
+  font-size: 11px;
+  background: rgba(0,0,0,0.2);
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  padding: 0 5px;
+  cursor: pointer;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+.unschedule-btn:hover {
+  background: rgba(220,38,38,0.7);
+}
+.rbc-toolbar {
+  margin-bottom: 8px;
+}
+.rbc-toolbar-label {
+  color: #374151;
+  font-weight: 700;
+}
+.dark .rbc-toolbar-label {
+  color: #e5e7eb;
+}
+.rbc-btn-group button {
+  min-width: 50px;
+  cursor: pointer;
+}
+
+.rbc-allday-cell {
+  min-height: 300px;
+}
+.rbc-time-view .rbc-allday-cell {
+  flex: 1;
+}
+.rbc-time-view .rbc-time-content {
+  max-height: 0;
+  min-height: 0;
+  flex: none;
+  overflow: hidden;
+  border-top: none;
+}
+.rbc-allday-cell .rbc-event {
+  font-size: 12px;
+  padding: 2px 6px;
+  margin: 1px 2px;
+  border-radius: 3px;
+}
+.rbc-day-slot .rbc-time-slot {
+  display: none;
 }

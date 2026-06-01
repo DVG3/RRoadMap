@@ -228,17 +228,17 @@ const onConnectEnd = useCallback((event: any) => {
 
       {menu && (
         <div 
-          className="fixed bg-white border border-gray-200 shadow-2xl rounded-md p-1.5 flex flex-col gap-1 z-50 w-40"
+          className="fixed bg-white border border-gray-200 shadow-2xl rounded-md p-1.5 flex flex-col gap-1 z-50 w-40 dark:bg-gray-800 dark:border-gray-600"
           style={{ top: menu.y, left: menu.x }}
           onClick={(e) => e.stopPropagation()}
-          onContextMenu={(e) => e.preventDefault()} // Chặn menu Edge khi bấm chuột phải trên bảng chọn
+          onContextMenu={(e) => e.preventDefault()}
         >
-          <div className="text-[10px] text-gray-400 font-bold px-2 py-1 uppercase tracking-wider">Thêm mới</div>
-          <button onClick={() => handleAddNodeFromMenu('task')} className="text-left px-3 py-1.5 text-sm font-semibold text-blue-700 hover:bg-blue-50 rounded">➕ Task</button>
-          <button onClick={() => handleAddNodeFromMenu('task-holder')} className="text-left px-3 py-1.5 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 rounded">🗂 Task Group</button>
-          <button onClick={() => handleAddNodeFromMenu('note')} className="text-left px-3 py-1.5 text-sm font-semibold text-yellow-700 hover:bg-yellow-50 rounded">📝 Note</button>
-          <button onClick={() => handleAddNodeFromMenu('reroute')} className="text-left px-3 py-1.5 text-sm font-semibold text-gray-700 hover:bg-gray-100 rounded">⏺ Reroute</button>
-          <button onClick={() => handleAddNodeFromMenu('custom-group')} className="text-left px-3 py-1.5 text-sm font-semibold text-purple-700 hover:bg-purple-50 rounded">🔲 Vùng (Group)</button>
+          <div className="text-[10px] text-gray-400 font-bold px-2 py-1 uppercase tracking-wider dark:text-gray-500">Thêm mới</div>
+          <button onClick={() => handleAddNodeFromMenu('task')} className="text-left px-3 py-1.5 text-sm font-semibold text-blue-700 hover:bg-blue-50 rounded dark:text-blue-400 dark:hover:bg-gray-700">➕ Task</button>
+          <button onClick={() => handleAddNodeFromMenu('task-holder')} className="text-left px-3 py-1.5 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 rounded dark:text-indigo-400 dark:hover:bg-gray-700">🗂 Task Group</button>
+          <button onClick={() => handleAddNodeFromMenu('note')} className="text-left px-3 py-1.5 text-sm font-semibold text-yellow-700 hover:bg-yellow-50 rounded dark:text-yellow-400 dark:hover:bg-gray-700">📝 Note</button>
+          <button onClick={() => handleAddNodeFromMenu('reroute')} className="text-left px-3 py-1.5 text-sm font-semibold text-gray-700 hover:bg-gray-100 rounded dark:text-gray-300 dark:hover:bg-gray-700">⏺ Reroute</button>
+          <button onClick={() => handleAddNodeFromMenu('custom-group')} className="text-left px-3 py-1.5 text-sm font-semibold text-purple-700 hover:bg-purple-50 rounded dark:text-purple-400 dark:hover:bg-gray-700">🔲 Vùng (Group)</button>
         </div>
       )}
     </div>
