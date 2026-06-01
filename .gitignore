@@ -1,0 +1,24 @@
+# Python venv
+RoadMap/
+
+# Runtime data
+rooms/
+
+# Backend (no longer needed)
+main.py
+
+# Frontend build & deps
+roadmap-frontend/node_modules/
+roadmap-frontend/dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# Logs
+*.log

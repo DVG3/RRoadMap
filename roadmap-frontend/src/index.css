@@ -1,0 +1,23 @@
+/* Khai báo của Tailwind v4 */
+@import "tailwindcss";
+
+/* Ép thẻ gốc của React (#root) phải tràn viền 100% màn hình, 
+nếu không các thành phần bên trong sẽ bị bóp dẹt */
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #f3f4f6; /* Màu xám nhạt (bg-gray-100) */
+}
+
+.react-flow__node-custom-group {
+  pointer-events: none !important;
+}
+
+/* Khôi phục lại khả năng click cho Header, Resizer và các nút bên trong Group */
+.react-flow__node-custom-group .pointer-events-auto,
+.react-flow__node-custom-group .react-flow__resize-control {
+  pointer-events: auto !important;
+}
